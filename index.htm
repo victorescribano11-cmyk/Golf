@@ -157,7 +157,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
   <div class="hud">
     <div class="row"><span class="lab">Hasta el hoyo</span><span class="lab" id="from">Tee 10</span></div>
     <div id="d">89,0<small>m</small></div>
-    <button class='fab gpsb' id='gpsb' aria-label='GPS'><svg viewBox='0 0 48 48'><circle cx='24' cy='24' r='8'/><path d='M24 5v9M24 34v9M5 24h9M34 24h9'/></svg></button><div class='gpp' id='gpp'><div class='gp-s' id='gps'></div><button id='g1'></button><button id='g2'></button><button id='g3' class='go'>Marcar golpe</button><button id='g5'>Probar sin GPS (demo)</button><button id='g4'>Salir del GPS</button><div class='gp-v'>Versión 5 · Tiempo: Open-Meteo.com</div></div><button class='fab' id='fab' aria-label='Elegir palo'><svg viewBox='0 0 48 48'><g class='g1'><path d='M37 5 24 29'/><path d='M11 41 22 27 28 30 27 41Z'/></g><g class='g2'><path d='M15 15 33 33M33 15 15 33'/></g></svg></button><div class='sheet' id='sheet' role='dialog' aria-label='Palo recomendado'><div class='sh'><div><div class='k'>Palo recomendado a</div><div class='v' id='sd'>89,0 m</div></div><button class='x' id='x' aria-label='Cerrar'>&times;</button></div><div class='nt' id='sn'></div><div id='clubs'></div></div>
+    <button class='fab gpsb' id='gpsb' aria-label='GPS'><svg viewBox='0 0 48 48'><circle cx='24' cy='24' r='8'/><path d='M24 5v9M24 34v9M5 24h9M34 24h9'/></svg></button><div class='gpp' id='gpp'><div class='gp-s' id='gps'></div><button id='g1'></button><button id='g2'></button><button id='g3' class='go'>Marcar golpe</button><button id='g6'>Cámara: seguirme ✓</button><button id='g5'>Probar sin GPS (demo)</button><button id='g4'>Salir del GPS</button><div class='gp-v'>Versión 7 · Tiempo: Open-Meteo.com</div></div><button class='fab' id='fab' aria-label='Elegir palo'><svg viewBox='0 0 48 48'><g class='g1'><path d='M37 5 24 29'/><path d='M11 41 22 27 28 30 27 41Z'/></g><g class='g2'><path d='M15 15 33 33M33 15 15 33'/></g></svg></button><div class='sheet' id='sheet' role='dialog' aria-label='Palo recomendado'><div class='sh'><div><div class='k'>Palo recomendado a</div><div class='v' id='sd'>89,0 m</div></div><button class='x' id='x' aria-label='Cerrar'>&times;</button></div><div class='nt' id='sn'></div><div id='clubs'></div></div>
     <div class="tees"><button data-t="y" class="on">Tee 10<em>89 m</em></button><button data-t="r">Tee 1<em>79 m</em></button></div>
     <div class="hint">Toca el mapa para colocar la bola. Arrastra para girar, pellizca para acercar. Relieve exagerado ×2,6.</div>
   </div>
@@ -370,9 +370,43 @@ const meDot=new THREE.Mesh(new THREE.SphereGeometry(1,20,14),new THREE.MeshBasic
 const meHalo=new THREE.Mesh(new THREE.RingGeometry(1.15,1.5,40),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.95,depthTest:false,side:THREE.DoubleSide}));
 meHalo.rotation.x=-Math.PI/2;meDot.renderOrder=8;meHalo.renderOrder=7;meDot.visible=false;meHalo.visible=false;scene.add(meDot,meHalo);
 const trail=[],trGeo=new THREE.BufferGeometry(),trPts=new THREE.Points(trGeo,new THREE.PointsMaterial({color:0x5ac8fa,size:5,sizeAttenuation:false,depthTest:false,transparent:true,opacity:.9}));trPts.renderOrder=7;trPts.frustumCulled=false;scene.add(trPts);
-function meUpdate(x,z){const y=H(x,z)+.4;trail.push(x,y,z);if(trail.length>900)trail.splice(0,3);trGeo.setAttribute('position',new THREE.Float32BufferAttribute(trail,3));meDot.position.set(x,y+.3,z);meHalo.position.set(x,y+.3,z);meDot.visible=true;meHalo.visible=true}
-function meClear(){trail.length=0;trGeo.setAttribute('position',new THREE.Float32BufferAttribute([],3));meDot.visible=false;meHalo.visible=false}
-function meFrame(now){if(!meDot.visible)return;const d=cam.position.distanceTo(meDot.position),s=Math.max(.5,d*.011),p=1+.18*Math.sin(now/260);meDot.scale.setScalar(s);meHalo.scale.setScalar(s*p)}
+const me3d=new THREE.Group(),mm=c=>new THREE.MeshLambertMaterial({color:c});
+const lg2=new THREE.CylinderGeometry(.11,.1,.85,10);lg2.translate(0,-.425,0);
+const legL=new THREE.Mesh(lg2,mm(0x2b3440)),legR=new THREE.Mesh(lg2,mm(0x2b3440));legL.position.set(-.13,.85,0);legR.position.set(.13,.85,0);
+const torso=new THREE.Mesh(new THREE.CylinderGeometry(.27,.23,.7,12),mm(0x2f9bff));torso.position.y=1.2;
+const ag=new THREE.CylinderGeometry(.07,.065,.62,8);ag.translate(0,-.31,0);
+const armL=new THREE.Mesh(ag,mm(0xe0b48f)),armR=new THREE.Mesh(ag,mm(0xe0b48f));armL.position.set(-.34,1.5,0);armR.position.set(.34,1.5,0);
+const phead=new THREE.Mesh(new THREE.SphereGeometry(.2,14,12),mm(0xe0b48f));phead.position.y=1.72;
+const pcap=new THREE.Mesh(new THREE.SphereGeometry(.215,14,8,0,Math.PI*2,0,Math.PI/2),mm(0xf4f4f0));pcap.position.y=1.74;
+const pbrim=new THREE.Mesh(new THREE.BoxGeometry(.3,.03,.2),mm(0xf4f4f0));pbrim.position.set(0,1.76,.2);
+{const lim=(r0,r1,len,seg)=>{const g=new THREE.CylinderGeometry(r0,r1,len,seg);g.translate(0,-len/2,0);return g};
+  legL.geometry=lim(.085,.062,.82,18);legR.geometry=legL.geometry;legL.position.set(-.1,.82,0);legR.position.set(.1,.82,0);
+  for(const lg of [legL,legR]){const sh=new THREE.Mesh(new THREE.SphereGeometry(.075,16,12),mm(0x20262e));sh.scale.set(1,.55,1.75);sh.position.set(0,-.8,.05);lg.add(sh)}
+  const pts=new THREE.SplineCurve([[0,0],[.14,.02],[.18,.12],[.16,.3],[.2,.46],[.19,.56],[.085,.63],[.055,.68],[0,.68]].map(p=>new THREE.Vector2(p[0],p[1]))).getPoints(48);
+  torso.geometry=new THREE.LatheGeometry(pts,32);torso.position.y=.82;
+  armL.geometry=lim(.05,.04,.56,16);armR.geometry=armL.geometry;armL.position.set(-.235,1.4,0);armR.position.set(.235,1.4,0);armL.rotation.z=.07;armR.rotation.z=-.07;
+  for(const ar of [armL,armR]){const hd=new THREE.Mesh(new THREE.SphereGeometry(.045,14,10),mm(0xe0b48f));hd.position.set(0,-.57,0);ar.add(hd)}
+  phead.geometry=new THREE.SphereGeometry(.105,26,20);phead.scale.y=1.08;phead.position.y=1.6;
+  pcap.geometry=new THREE.SphereGeometry(.113,26,12,0,Math.PI*2,0,Math.PI/2);pcap.position.y=1.62;
+  pbrim.geometry=new THREE.SphereGeometry(.11,22,8);pbrim.scale.set(1,.14,1.25);pbrim.position.set(0,1.625,.095)}
+me3d.add(legL,legR,torso,armL,armR,phead,pcap,pbrim);me3d.visible=false;scene.add(me3d);
+const meLbl=label('Tú',new THREE.Vector3(0,-1e5,0),'m');
+let lastMe=null,meYaw=0,follow=true;
+const g6=document.getElementById('g6');g6.onclick=()=>{follow=!follow;g6.textContent='Cámara: seguirme '+(follow?'✓':'(no)')};
+function mePerson(x,z){const y=H(x,z),now=performance.now();
+  if(!lastMe){lastMe={x,z,t:0};meYaw=Math.atan2(-x,-z);me3d.rotation.y=meYaw}
+  else if(Math.hypot(x-lastMe.x,z-lastMe.z)>.8){meYaw=Math.atan2(x-lastMe.x,z-lastMe.z);lastMe={x,z,t:now}}
+  me3d.position.set(x,y,z);me3d.visible=true;meHalo.position.set(x,y+.15,z)}
+function meUpdate(x,z){const y=H(x,z)+.4;trail.push(x,y,z);if(trail.length>900)trail.splice(0,3);trGeo.setAttribute('position',new THREE.Float32BufferAttribute(trail,3));meDot.position.set(x,y+.3,z);meHalo.position.set(x,y+.3,z);meDot.visible=false;meHalo.visible=true;mePerson(x,z)}
+function meClear(){me3d.visible=false;meLbl.pos.y=-1e5;lastMe=null;trail.length=0;trGeo.setAttribute('position',new THREE.Float32BufferAttribute([],3));meDot.visible=false;meHalo.visible=false}
+function meFrame(now){if(!me3d.visible)return;
+  const d=cam.position.distanceTo(me3d.position),s=Math.max(1,Math.min(3.2,d*.016)),p=1+.15*Math.sin(now/260);
+  me3d.scale.setScalar(s);meHalo.scale.setScalar(s*.9*p);
+  const mv=lastMe&&now-lastMe.t<2500,w=Math.sin(now/140);
+  legL.rotation.x=mv?w*.7:0;legR.rotation.x=mv?-w*.7:0;armL.rotation.x=mv?-w*.5:0;armR.rotation.x=mv?w*.5:0;
+  let da=meYaw-me3d.rotation.y;da=Math.atan2(Math.sin(da),Math.cos(da));me3d.rotation.y+=da*.15;
+  meLbl.pos.set(me3d.position.x,me3d.position.y+2.2*s,me3d.position.z);
+  if(follow&&!tw){const dx=me3d.position.x-ctl.target.x,dy=me3d.position.y-ctl.target.y,dz=me3d.position.z-ctl.target.z;ctl.target.x+=dx*.08;ctl.target.y+=dy*.08;ctl.target.z+=dz*.08;cam.position.x+=dx*.08;cam.position.y+=dy*.08;cam.position.z+=dz*.08}}
 const gS=t=>{gsEl.textContent=t};
 function gSave(){try{localStorage.setItem('gpsCal',JSON.stringify({gTee,gHole,gk,gCal}))}catch(e){}}
 try{const j=JSON.parse(localStorage.getItem('gpsCal')||'null');if(j){gTee=j.gTee;gHole=j.gHole;gk=j.gk||'y';gCal=j.gCal}}catch(e){}
@@ -390,7 +424,7 @@ function gFix(p){const c=p.coords;gLast={lat:c.latitude,lon:c.longitude,acc:c.ac
 function gErr(e){gS(e.code===1?'Ubicaci\u00f3n bloqueada: perm\u00edtela en Ajustes o abre la p\u00e1gina fuera de la vista previa.':'Sin se\u00f1al GPS \u00b7 sal a cielo abierto.')}
 function gStart(){if(!navigator.geolocation){gS('Este navegador no permite GPS.');return}gOn=true;gpsb.classList.add('on');gS('Buscando se\u00f1al\u2026');
   try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(()=>{})}catch(e){}
-  gw=navigator.geolocation.watchPosition(gFix,gErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000})}
+  gw=navigator.geolocation.watchPosition(gFix,gErr,{enableHighAccuracy:true,maximumAge:1000,timeout:20000});const tm0=TEE[hn===10?'y':'r'];mePerson(tm0[0],tm0[1]);meHalo.visible=true}
 function gStop(){meClear();if(gw!==null)navigator.geolocation.clearWatch(gw);gw=null;gOn=false;gLast=null;gMe.s=false;accRing.visible=false;gpsb.classList.remove('on');gpp.classList.remove('open');gS('GPS apagado')}
 function gMeasure(i){if(!gLast){gS('Esperando se\u00f1al GPS\u2026');return}const b=gb[i],t0=Date.now();gBuf=[];b.disabled=true;
   const iv=setInterval(()=>{b.textContent='Midiendo\u2026 '+Math.max(0,6-Math.floor((Date.now()-t0)/1000))+' s';
